@@ -8,6 +8,8 @@ instructor/TA for all program components included here!
 import sys
 #For sin, log, etc. functions
 import math
+#For random num generation
+import random
 
 '''operation methods'''
 def add(num1, num2):
@@ -129,8 +131,6 @@ def shunt(exp):
     #while there are ops on stack, pop to queue
     while ops_stk:
         output_que.extend(ops_stk.pop())
-          
-    print(output_que)
     
     # evaluates postfix notation
     for op in output_que:
@@ -140,8 +140,7 @@ def shunt(exp):
             elif op in fcs:
                 #no stack means no real input
                 if not ops_stk:
-                    print('~Functions require input')
-                    return;
+                    return '~Functions require input'
                 num = get_num_type(ops_stk.pop())
                 print("evaluating: ", end='')
                 print(op)
@@ -163,19 +162,17 @@ def shunt(exp):
                 
                 #Check for divide by zero
                 if(num2 == 0 and op == '/'):
-                    print("~Cannot divide by zero")
-                    return
+                    return '~Cannot divide by zero'
                 
                 print(operations[op](num1, num2))
                 
                 ops_stk.append(operations[op](num1, num2))
         except OverflowError: 
-            print('~Result is too big to compute')
-            return
+            return'~Result is too big to compute'
         
     if not ops_stk:
-        print('~Invalid Input')
-        return
+        return '~Invalid Input'
+
     answer = ops_stk[-1]
     print("\n= ", end='') 
     if isinstance(answer, float):
@@ -290,29 +287,42 @@ def validate(exp):
     print(new_exp)
     return new_exp
 
+# Runs calculator and returns either evaluated expression or an error with '~' at the beginning
+def test_calc(exp):
+    #Get clean input with no white space
+    exp = ''.join(exp.split())
+
+    validated = validate(exp)
+    
+    #Returns a ~message if an error is occured
+    if '~' in validated: return validated
+    shunted = shunt(validate)
+    return shunted
+
+def generate_equations(amount):
+    print(amount)
+    ''' 
+    Half of amount are sure to be incorrect equation
+    Other half must be correctly formatted
+    Generate random num of numbers to use in equation (0-10)
+    Number has 50% chance to be be a whole number or decimal if not a zero
+    Also 50% chance to be negative or positive if not a zero
+    Correct:
+            number of ops is no more than number of nums-1
+            every open parenthesis has a closing parenthesis
+            no number is divided by zero
+            there can't be more than one consecutive operator (unless its a minus)
+            
+    Generation:
+            equal chance of a number being affected by a function + beginning parenthesis, 
+            is preceeded by a parenthesis (or followed by a parenthesis if there is a beginning one already),
+            an operation
+    '''
+    
 if __name__ == '__main__':
-    print("What would you like to evaluate!? Enter \"help\" for possible operations and formatting, and \
-          \"exit\" to stop the calculator\n")
-        
-    # Loop
-    while(True):
-        expression = input("Input: ")
-        
-        #Get clean input with no white space
-        expression = ''.join(expression.split())
-        if expression == "help":
-            print("\nWhen entering expressions, don't worry about excess spaces.")
-            print("Accepts regular \'()\' and curly \'{}\' brackets interchangeably\n")
-            print("\n~~~~~~~~~~~~~List of acceptable operations~~~~~~~~~~~~~")
-            print("Binary operators:\n+, -, *, /, ^\n")
-            print("Trigonmetry Functions (returns values in radians): \nsin(), tan(), cos(), cot()\n")
-            print("Logarithmic Functions: \nlog(): evaluates log10, ln(): evaluates natural log")
-        elif expression == "exit":
-            sys.exit(0)
-        else:
-            validated = validate(expression)
-            #Use ~ in errors to catch and print
-            if '~' in validated: print(validated)
-            else: shunt(validated)
-    
-    
+    print("How many equations would you like to be generated?")
+    numOfEq = input("Input: ")
+    #generate random expression
+    #pass to test_calc
+    #pass to eval
+    #print stats
