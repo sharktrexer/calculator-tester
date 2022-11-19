@@ -302,27 +302,44 @@ def test_calc(exp):
 def generate_equations(amount):
     print(amount)
     ''' 
+    Loop while i < amount
     Half of amount are sure to be incorrect equation
     Other half must be correctly formatted
     Generate random num of numbers to use in equation (0-10)
-    Number has 50% chance to be be a whole number or decimal if not a zero
+    Number has 50% chance to be be a whole number or decimal (rand number of decimals (0-5)) if not a zero
     Also 50% chance to be negative or positive if not a zero
     Correct:
-            number of ops is no more than number of nums-1
-            every open parenthesis has a closing parenthesis
-            no number is divided by zero
-            there can't be more than one consecutive operator (unless its a minus)
+        number of ops is no more than number of nums-1
+        every open parenthesis has a closing parenthesis
+        no number is divided by zero
+        there can't be more than one consecutive operator (unless its a minus)
             
     Generation:
-            equal chance of a number being affected by a function + beginning parenthesis, 
-            is preceeded by a parenthesis (or followed by a parenthesis if there is a beginning one already),
-            an operation
+        equal chance of a number being affected by a function + beginning parenthesis, 
+        is preceeded by a parenthesis (or followed by a parenthesis if there is a beginning one already),
+        an operation
+            
+    Incorrect:
+        equation contains random text
+        decimals have multiple periods
     '''
+    #pass to test_calc and eval()
+    #print current stats
+    '''
+    Stats:
+        Number of Correct vs Incorrect equations generated
+        Number of correct equations found by calc and eval()
+        Accuracy of calc
+        Time taken for each to evaluate equation?
+    '''
+    #end loop
+    #print stats
     
 if __name__ == '__main__':
+    #get input
     print("How many equations would you like to be generated?")
     numOfEq = input("Input: ")
     #generate random expression
-    #pass to test_calc
-    #pass to eval
-    #print stats
+    generate_equations(numOfEq)
+    #end of program
+    sys.exit(0)
