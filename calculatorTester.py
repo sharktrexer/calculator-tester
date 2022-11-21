@@ -300,7 +300,61 @@ def test_calc(exp):
     return shunted
 
 def generate_equations(amount):
-    print(amount)
+    
+    
+    i = 0
+    
+    ''' EQUATION GENERATION '''
+    while(i < amount):
+        
+        print("\nEQUATION #", i, "----------------------------------------------\n")
+        
+        #half of equations are incorrect
+        CORRECT = i < amount/2
+        
+        terms = random.randint(1, 15) # Rand number of terms in the equation
+        print("num of terms: ", terms, "\n")
+        num_stk = [] # stores all randomly generated terms
+        
+        iTerm = 0
+        
+        '''' NUMBER GENERATOR '''
+        while(iTerm < terms):
+            num = random.randint(-999, 999)
+            
+            '''coin flip if it is a decimal'''
+            if(random.randint(0,1)):
+                decPlaces = random.randint(1, 6)
+                decNum = str(num) + "."
+                
+                iDec = 0
+                
+                '''' decimal generator '''
+                while(iDec < decPlaces):
+                    # making sure the last decimal place is never
+                    if iDec == decPlaces - 1:
+                        decNum += str(random.randint(1, 9))
+                    else:
+                        decNum += str(random.randint(0, 9))
+                    
+                    iDec = iDec + 1
+                    # decimal gen increment
+                
+                num_stk.append(float(decNum)) 
+            else:
+                num_stk.append(num)
+            
+            iTerm = iTerm + 1
+            # number gen increment       
+            
+        print("stack: ", num_stk, "\n")
+        
+        ''' iterate thru num stack
+            decide if there should be an operator next or an operation
+        '''
+        
+        i = i + 1
+        #equation gen increment
     ''' 
     Loop while i < amount
     Half of amount are sure to be incorrect equation
@@ -333,13 +387,25 @@ def generate_equations(amount):
         Time taken for each to evaluate equation?
     '''
     #end loop
-    #print stats
+    #print final cumulative stats
     
+# Main
 if __name__ == '__main__':
-    #get input
+    
     print("How many equations would you like to be generated?")
-    numOfEq = input("Input: ")
-    #generate random expression
+    
+    # get input and check that input is valid
+    while(True):
+        numOfEq = input("Input: ")
+        try:
+            numOfEq = int(numOfEq) # cast
+            if numOfEq <= 0: raise ValueError() # number must be natural
+            break
+        except ValueError: #cast fail/<0
+            print("\nPlease try again with a valid input.")
+    
+    #generate random expressions
     generate_equations(numOfEq)
+    
     #end of program
     sys.exit(0)
