@@ -324,6 +324,7 @@ def generate_equations(amount):
         
         #half of equations are incorrect
         CORRECT = i < amount/2
+        isInvalid = False
         print('correct: ', CORRECT)
         
         terms = random.randint(1, MAX_NUM_OF_TERMS) # Rand number of terms in the equation
@@ -377,15 +378,18 @@ def generate_equations(amount):
             isLastNum = iOp == len(num_stk) - 1
             
             # Dice roll
-            if(iOp == 0 and not isLastNum):
+            if(iOp == 0 and not isLastNum and CORRECT):
                 # dont roll for paren if it is the first term, but not the only term
                 # however this rule is ignored if it is being generated incorrectly
                 # this gives the equation a chance to have incorrect usage of parenthesis
-                OFIndex = random.randint(0,10) if CORRECT else random.randint(0,12)
-            elif(isLastNum):
-                OFIndex = random.randint(5,11) #if there is only one term then only roll for functions and end paren
+                OFIndex = random.randint(0,10)
+            elif(isLastNum and CORRECT):
+                OFIndex = random.randint(5,11) 
+                #if there is only one term then only roll for functions and end paren
                 # turns what a start paren index would be into a end paren index, 
                 # as long as its not just the single term in the eq
+                # this rule is ignored if it is being generated incorrectly
+                # this gives a chance of invalid equation generation
                 OFIndex = 12 if OFIndex == 11 and len(n) > 1 else random.randint(5,10)
             elif(onlyOps and CORRECT): 
                 # only operators if a parenthesis was added 
@@ -398,7 +402,6 @@ def generate_equations(amount):
                 # however this condition is ignored if it is being generated incorrectly
                 # this gives the equation to have more of a chance to incorrectly use paren
                 OFIndex = random.randint(0,12) if not CORRECT or unclosedParenCount > 0 else random.randint(0,11)
-                ''' ALSO REROLL IF LAST EQ ELEMENT IS DIVIDE AND THIS TERM IS 0 '''
                 
             #reset onlyOps
             onlyOps = False    
@@ -463,7 +466,7 @@ def generate_equations(amount):
             iOp += 1
         # op & func gen increment
         
-        ''' CLOSEING PARENTHESIS '''
+        ''' CLOSING PARENTHESIS '''
         #if correct: close all starting paren for the equation
         iParen = 0;
         
@@ -472,6 +475,7 @@ def generate_equations(amount):
             #chance to not add a closing paren if this equation is being generated incorrectly
             if not CORRECT:
                 if random.randint(0,1):
+                    isInvalid = True
                     continue
                 
             eq += ")"
@@ -480,13 +484,12 @@ def generate_equations(amount):
         # paren closing loop increment
         
         
-        ''' TODO
-            KEEP TRACK IF SOMETHING DID OCCUR TO HAVE THE EQUATION BE INCORRECT
-            IF NOT, THEN ADD THIS INVALIDATING STRING
-        '''
-        #if not CORRECT:
-         #   eq += "&|@,#`$~"
+        # if the equation hasn't been invalidated by chance
+        # then purposefully invalidate equation with a string of nonsense
+        if not CORRECT and not isInvalid:
+            eq += "&|@,#`$~"
     
+        # Giving equation to testers
         print("Generated: \n", eq)
         try:
             print("My calc result: \n", test_calc(eq))
@@ -502,10 +505,9 @@ def generate_equations(amount):
     #equation gen increment
     ''' 
     Correct:
-        no number is divided by zero, validate by re-gening the number to not zero
-        no negative number is entered into log, validate by putting equation thru calc, 
-            if log error is encountered then re-gen the equation
-        there can't be more than one consecutive operator (unless its a minus)
+        no number is divided by zero and no negative number is entered into log
+            validate by putting equation thru calc, 
+            if log or divide error is encountered then re-gen the equation
             
     Incorrect:
         -equation contains random text
@@ -515,8 +517,6 @@ def generate_equations(amount):
         negative number into log
         unbalanced operators
     '''
-    #pass to test_calc and eval()
-    #print current stats
     '''
     Stats:
         Number of Correct vs Incorrect equations generated
@@ -524,7 +524,7 @@ def generate_equations(amount):
         Accuracy of calc
         Time taken for each to evaluate equation?
     '''
-    #end loop
+    
     #print final cumulative stats
     
 # Main
