@@ -11,6 +11,11 @@ import math
 #For random num generation
 import random
 
+#constant variables
+NUM_RANGE = 100
+MAX_NUM_OF_TERMS = 8
+MAX_NUM_OF_DECIMAL_PLACES = 5
+
 '''operation methods'''
 def add(num1, num2):
     return num1 + num2
@@ -146,6 +151,10 @@ def shunt(exp):
                 print(op)
                 print('with number: ', end='')
                 print(num)
+                
+                if(num < 0 and (op == 'e' or op == 'l')):
+                    return '~The argument of a log function cannot be negative'
+                
                 print(operations[op](num))
                 ops_stk.append(operations[op](num))
             else:
@@ -174,11 +183,14 @@ def shunt(exp):
         return '~Invalid Input'
 
     answer = ops_stk[-1]
+    return answer
+'''
     print("\n= ", end='') 
     if isinstance(answer, float):
         print("%.14f" % round(ops_stk[-1], 14))
     else:
         print(int(answer))
+    '''
         
     
 def validate(exp):
@@ -259,8 +271,9 @@ def validate(exp):
                 if chars[i+1] != '(':
                     new_exp.append('(')
                     negate = True
-            # if the next key isn't a left paren or a digit, then something is wrong
-            elif not_end and not chars[i+1] in strt_paren and not chars[i+1].isdigit(): return '~Invalid use of operations'
+            # if the next key isn't a left paren, function or a digit, then something is wrong
+            elif not_end and not chars[i+1] in strt_paren and not chars[i+1].isdigit() and not chars[i+1] in fcs: 
+                return '~Invalid use of operations'
             # otherwise it is binary minus
             else: new_exp.append(chars[i])
         # if an operation check if there is another operation ahead (ignores minus since it could be unary)
@@ -296,86 +309,211 @@ def test_calc(exp):
     
     #Returns a ~message if an error is occured
     if '~' in validated: return validated
-    shunted = shunt(validate)
+    shunted = shunt(validated)
     return shunted
 
 def generate_equations(amount):
     
-    
+    eq = ""
     i = 0
     
     ''' EQUATION GENERATION '''
     while(i < amount):
         
-        print("\nEQUATION #", i, "----------------------------------------------\n")
+        print("\nEQUATION #", i+1, "----------------------------------------------\n")
         
         #half of equations are incorrect
         CORRECT = i < amount/2
+        print('correct: ', CORRECT)
         
-        terms = random.randint(1, 15) # Rand number of terms in the equation
+        terms = random.randint(1, MAX_NUM_OF_TERMS) # Rand number of terms in the equation
         print("num of terms: ", terms, "\n")
-        num_stk = [] # stores all randomly generated terms
+        num_stk = [] # stores all randomly generated terms in string form
         
         iTerm = 0
         
         '''' NUMBER GENERATOR '''
         while(iTerm < terms):
-            num = random.randint(-999, 999)
+            num = random.randint(-NUM_RANGE, NUM_RANGE)
             
             '''coin flip if it is a decimal'''
             if(random.randint(0,1)):
-                decPlaces = random.randint(1, 6)
+                decPlaces = random.randint(1, MAX_NUM_OF_DECIMAL_PLACES)
                 decNum = str(num) + "."
                 
                 iDec = 0
                 
                 '''' decimal generator '''
                 while(iDec < decPlaces):
-                    # making sure the last decimal place is never
+                    # making sure the last decimal place is never 0
                     if iDec == decPlaces - 1:
                         decNum += str(random.randint(1, 9))
                     else:
                         decNum += str(random.randint(0, 9))
                     
-                    iDec = iDec + 1
-                    # decimal gen increment
+                    iDec += 1
+                # decimal gen increment
                 
-                num_stk.append(float(decNum)) 
+                num_stk.append(str(float(decNum)))
             else:
-                num_stk.append(num)
+                num_stk.append(str(num))
             
-            iTerm = iTerm + 1
-            # number gen increment       
+            iTerm += 1
+        # number gen increment     
+            
             
         print("stack: ", num_stk, "\n")
         
-        ''' iterate thru num stack
-            decide if there should be an operator next or an operation
-        '''
+        ''' OPERATOR & FUNCTION GENERATOR '''
+        unclosedParenCount = 0
+        onlyOps = False
         
+        iOp = 0
+        
+        while(iOp < len(num_stk) ):
+            
+            OFIndex = 0 #which op is being fetched from the operater dictionary
+            n = num_stk[iOp] # number
+            isLastNum = iOp == len(num_stk) - 1
+            
+            # Dice roll
+            if(iOp == 0 and not isLastNum):
+                # dont roll for paren if it is the first term, but not the only term
+                # however this rule is ignored if it is being generated incorrectly
+                # this gives the equation a chance to have incorrect usage of parenthesis
+                OFIndex = random.randint(0,10) if CORRECT else random.randint(0,12)
+            elif(isLastNum):
+                OFIndex = random.randint(5,11) #if there is only one term then only roll for functions and end paren
+                # turns what a start paren index would be into a end paren index, 
+                # as long as its not just the single term in the eq
+                OFIndex = 12 if OFIndex == 11 and len(n) > 1 else random.randint(5,10)
+            elif(onlyOps and CORRECT): 
+                # only operators if a parenthesis was added 
+                # however this rule is ignored if the generated equation is incorrect
+                # this itself won't make the equation wrong, but give it redundant parenthesis
+                OFIndex = random.randint(0, 4) 
+            else:
+                # otherwise roll for every option with the condition that 
+                # an end paren will only generate if there is at least one unclosed paren
+                # however this condition is ignored if it is being generated incorrectly
+                # this gives the equation to have more of a chance to incorrectly use paren
+                OFIndex = random.randint(0,12) if not CORRECT or unclosedParenCount > 0 else random.randint(0,11)
+                ''' ALSO REROLL IF LAST EQ ELEMENT IS DIVIDE AND THIS TERM IS 0 '''
+                
+            #reset onlyOps
+            onlyOps = False    
+            
+            #coin flip if the equation should finish up
+            endEq = isLastNum and random.randint(0,1)
+            
+            if(not endEq):
+                # adding func/op type
+                # functions and paren force the same number to be iterated upon again
+                # this allows for equations to generate nested functions
+                # and have the equation divided by parenthesis if generated as such
+                if(OFIndex == 0): #plus
+                    eq += n + "+"
+                elif(OFIndex == 1):   #minus
+                    eq += n + "-"
+                elif(OFIndex == 2):   #multiply
+                    eq += n + "*"
+                elif(OFIndex == 3):   #divide
+                    eq += n + "/"
+                elif(OFIndex == 4):   #exponent
+                    eq += n + "^"
+                elif(OFIndex == 5):   #sin(
+                    eq += "sin("     
+                elif(OFIndex == 6):   #tan()
+                    eq += "tan("     
+                elif(OFIndex == 7):   #cos()
+                     eq += "cos("
+                elif(OFIndex == 8):   #cot()
+                     eq += "cot("
+                elif(OFIndex == 9):   #log()
+                     eq += "log("
+                elif(OFIndex == 10):  #ln()
+                     eq += "ln("
+                elif(OFIndex == 11):  #starting parenthesis (
+                    # current number is instead fused with the paren
+                    # this allows for an operation to be applied to it
+                     num_stk[iOp] = "(" + n
+                     onlyOps = True
+                elif(OFIndex == 12):  #end parenthesis )
+                    # if the last number, finish the equation
+                    # otherwise fuse with the number so an operator may be used on it
+                    if(isLastNum):
+                        eq += ")"
+                    else:
+                        num_stk[iOp] = n + ")"
+                        unclosedParenCount -= 1
+                        onlyOps = True
+                        iOp -= 1     
+                        
+                # if the type of token being added is a func or start paren
+                # the amount of unclosed parenthesis will increase
+                # and the number will always be re-terated upon
+                # end parenthesis slight differs with a condition
+                if OFIndex >= 5 and OFIndex <= 11:
+                    unclosedParenCount += 1
+                    iOp -= 1
+                        
+            else:
+                eq += n
+            
+            iOp += 1
+        # op & func gen increment
+        
+        ''' CLOSEING PARENTHESIS '''
+        #if correct: close all starting paren for the equation
+        iParen = 0;
+        
+        while iParen < unclosedParenCount:
+            
+            #chance to not add a closing paren if this equation is being generated incorrectly
+            if not CORRECT:
+                if random.randint(0,1):
+                    continue
+                
+            eq += ")"
+            
+            iParen += 1
+        # paren closing loop increment
+        
+        
+        ''' TODO
+            KEEP TRACK IF SOMETHING DID OCCUR TO HAVE THE EQUATION BE INCORRECT
+            IF NOT, THEN ADD THIS INVALIDATING STRING
+        '''
+        #if not CORRECT:
+         #   eq += "&|@,#`$~"
+    
+        print("Generated: \n", eq)
+        try:
+            print("My calc result: \n", test_calc(eq))
+        except Exception as e:
+            print("Calc Error: \n", str(e))
+        try:
+            print("Python eval result: \n", eval(eq)) 
+        except Exception as e:
+            print("Eval Error: \n", str(e))
+        
+        eq = ""
         i = i + 1
-        #equation gen increment
+    #equation gen increment
     ''' 
-    Loop while i < amount
-    Half of amount are sure to be incorrect equation
-    Other half must be correctly formatted
-    Generate random num of numbers to use in equation (0-10)
-    Number has 50% chance to be be a whole number or decimal (rand number of decimals (0-5)) if not a zero
-    Also 50% chance to be negative or positive if not a zero
     Correct:
-        number of ops is no more than number of nums-1
-        every open parenthesis has a closing parenthesis
-        no number is divided by zero
+        no number is divided by zero, validate by re-gening the number to not zero
+        no negative number is entered into log, validate by putting equation thru calc, 
+            if log error is encountered then re-gen the equation
         there can't be more than one consecutive operator (unless its a minus)
             
-    Generation:
-        equal chance of a number being affected by a function + beginning parenthesis, 
-        is preceeded by a parenthesis (or followed by a parenthesis if there is a beginning one already),
-        an operation
-            
     Incorrect:
-        equation contains random text
+        -equation contains random text
         decimals have multiple periods
+        2 non minus operators in a row
+        divide by zero
+        negative number into log
+        unbalanced operators
     '''
     #pass to test_calc and eval()
     #print current stats
