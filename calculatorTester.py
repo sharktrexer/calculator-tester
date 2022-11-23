@@ -522,7 +522,7 @@ def generate_equations(amount):
         test = test_calc(eq)
         if isinstance(test, str) and ("zero" in test or "negative" in test or "compute" in test):
             if CORRECT:
-                i -+ 1
+                i -= 1
                 eq = ""
                 continue
             
