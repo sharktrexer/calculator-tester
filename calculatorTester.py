@@ -120,15 +120,17 @@ def shunt(exp):
             ops_stk.append(x)
         # if right paren
         elif x in end_paren:
-            print("op stk before pop: ", ops_stk)
-            print("output que before pop: ", output_que)
+            #print("op stk before pop: ", ops_stk)
+            #print("output que before pop: ", output_que)
             # while the top of the stack isn't a left paren
             while ops_stk and (not ops_stk[-1] in strt_paren):
                 #pop ops from stack onto queue
-                print("pop: ", output_que.append(ops_stk.pop()))
+                #print("pop: ", output_que.append(ops_stk.pop()))
+                output_que.append(ops_stk.pop())
                 
             #discard left paren    
-            print("discard: ", ops_stk.pop())
+            #print("discard: ", ops_stk.pop())
+            ops_stk.pop()
 
             #if the top of the op stack is a func
             if ops_stk and ops_stk[-1] in fcs:
@@ -149,10 +151,10 @@ def shunt(exp):
                 if not ops_stk:
                     return '~Functions require input'
                 num = get_num_type(ops_stk.pop())
-                print("evaluating: ", end='')
-                print(op)
-                print('with number: ', end='')
-                print(num)
+                #print("evaluating: ", end='')
+                #print(op)
+                #print('with number: ', end='')
+                #print(num)
                 
                 # log of <=0 is undefined
                 if(num <= 0 and (op == 'e' or op == 'l')):
@@ -162,7 +164,7 @@ def shunt(exp):
                 if(math.sin(num) == 0 and op == 'o'):
                     return '~The argument of a cotangent function had a value of sin() equal to zero'
                 
-                print(operations[op](num))
+                #print(operations[op](num))
                 ops_stk.append(operations[op](num))
             else:
                 # Ignores unary positives
@@ -171,10 +173,10 @@ def shunt(exp):
                 num2 = get_num_type(ops_stk.pop())
                 num1 = get_num_type(ops_stk.pop())  
                 
-                print("evaluating: ", end='')
-                print(num1, end = ' ')
-                print(op,  end = ' ')
-                print(num2)
+                #print("evaluating: ", end='')
+                #print(num1, end = ' ')
+                #print(op,  end = ' ')
+                #print(num2)
                 
                 #Check for divide by zero
                 if(num2 == 0 and op == '/'):
@@ -190,7 +192,7 @@ def shunt(exp):
                     ):
                     return '~Unable to calculate the exponent with a negative decimal'
                 
-                print(operations[op](num1, num2))
+                #print(operations[op](num1, num2))
                 
                 ops_stk.append(operations[op](num1, num2))
         except OverflowError: 
@@ -310,8 +312,8 @@ def validate(exp):
     if right_paren != left_paren: return '~Mismatching parenthesis'
     if left_paren + right_paren == length: return '~Input requires numbers'
     
-    print("validated exp: ", end="")
-    print(new_exp)
+    #print("validated exp: ", end="")
+    #print(new_exp)
     return new_exp
 
 # Runs calculator and returns either evaluated expression or an error with '~' at the beginning
@@ -469,7 +471,7 @@ def generate_equations(amount):
                     # if the last number, finish the equation
                     # otherwise fuse with the number so an operator may be used on it
                     if(isLastNum):
-                        eq += ")"
+                        eq += n + ")"
                     else:
                         num_stk[iOp] = n + ")"
                         unclosedParenCount -= 1
@@ -520,9 +522,9 @@ def generate_equations(amount):
         # this helps the generator not generate incorrect equations when they should be correct
         print("Generated: \n", eq, "\n")
         test = test_calc(eq)
+        print("test resulted: ", test)
         if isinstance(test, str) and ("zero" in test or "negative" in test or "compute" in test):
             if CORRECT:
-                i -= 1
                 eq = ""
                 continue
             
