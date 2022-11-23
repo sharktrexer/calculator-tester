@@ -120,13 +120,15 @@ def shunt(exp):
             ops_stk.append(x)
         # if right paren
         elif x in end_paren:
+            print("op stk before pop: ", ops_stk)
+            print("output que before pop: ", output_que)
             # while the top of the stack isn't a left paren
             while ops_stk and (not ops_stk[-1] in strt_paren):
                 #pop ops from stack onto queue
-                output_que.append(ops_stk.pop())
+                print("pop: ", output_que.append(ops_stk.pop()))
                 
             #discard left paren    
-            ops_stk.pop()
+            print("discard: ", ops_stk.pop())
 
             #if the top of the op stack is a func
             if ops_stk and ops_stk[-1] in fcs:
@@ -152,8 +154,13 @@ def shunt(exp):
                 print('with number: ', end='')
                 print(num)
                 
-                if(num < 0 and (op == 'e' or op == 'l')):
-                    return '~The argument of a log function cannot be negative'
+                # log of <=0 is undefined
+                if(num <= 0 and (op == 'e' or op == 'l')):
+                    return '~The argument of a log function cannot be less than or equal to zero'
+                
+                # divide by zero error
+                if(math.sin(num) == 0 and op == 'o'):
+                    return '~The argument of a cotangent function had a value of sin() equal to zero'
                 
                 print(operations[op](num))
                 ops_stk.append(operations[op](num))
@@ -173,6 +180,16 @@ def shunt(exp):
                 if(num2 == 0 and op == '/'):
                     return '~Cannot divide by zero'
                 
+                #cannot calculate the exponent of a negative decimal in either place
+                if(
+                    op == '^'
+                    and (
+                    (num1 <= 0 and isinstance(num1, float))
+                    or 
+                    (num2 <= 0 and isinstance(num2, float)))
+                    ):
+                    return '~Unable to calculate the exponent with a negative decimal'
+                
                 print(operations[op](num1, num2))
                 
                 ops_stk.append(operations[op](num1, num2))
@@ -182,15 +199,7 @@ def shunt(exp):
     if not ops_stk:
         return '~Invalid Input'
 
-    answer = ops_stk[-1]
-    return answer
-'''
-    print("\n= ", end='') 
-    if isinstance(answer, float):
-        print("%.14f" % round(ops_stk[-1], 14))
-    else:
-        print(int(answer))
-    '''
+    return get_num_type(ops_stk[-1])
         
     
 def validate(exp):
@@ -286,7 +295,12 @@ def validate(exp):
             new_exp.append(chars[i])
         elif chars[i] in end_paren: 
             right_paren += 1
+            
+            # if a start paren has never existed then adding an end paren invalidates this equation
+            if left_paren < right_paren: return '~Cannot end a parenthesis group if it was never opened'
+            
             new_exp.append(chars[i])
+            
         # invalid token
         else: return '~Invalid input'
         
@@ -312,6 +326,7 @@ def test_calc(exp):
     shunted = shunt(validated)
     return shunted
 
+# generates random equations
 def generate_equations(amount):
     
     eq = ""
@@ -351,11 +366,17 @@ def generate_equations(amount):
                         decNum += str(random.randint(1, 9))
                     else:
                         decNum += str(random.randint(0, 9))
+                        
+                    # Chance to add an extra decimal place to the number to invalidate the equation
+                    # chance is lessened the more decimal places there are
+                    if not CORRECT and random.randint(0, decPlaces) == 0:
+                        decNum += "."
+                        isInvalid = True
                     
                     iDec += 1
                 # decimal gen increment
                 
-                num_stk.append(str(float(decNum)))
+                num_stk.append(decNum)
             else:
                 num_stk.append(str(num))
             
@@ -378,6 +399,9 @@ def generate_equations(amount):
             isLastNum = iOp == len(num_stk) - 1
             
             # Dice roll
+            # Equation being incorrect will force the generator to choose any operation 
+            # no matter the condition. Since this only gives the equation a chance of being incorrect,
+            # isInvalid is not changed
             if(iOp == 0 and not isLastNum and CORRECT):
                 # dont roll for paren if it is the first term, but not the only term
                 # however this rule is ignored if it is being generated incorrectly
@@ -482,26 +506,46 @@ def generate_equations(amount):
             
             iParen += 1
         # paren closing loop increment
-        
-        
+            
+            
+        # If the equation must be correct then it is necessary to test the generated eq
+        # to not cause a divide by zero, negative log input error, compute a result too big,
+        # or try to solve the exponent of a negative decimal
+        # this test will only be catching those errors
+        # if caught, the equation will be regenerated until it
+        # doesn't divide by zero or input a neg num into log
+        # this doesn't affect stats of this calculator vs eval as 
+        # the errors would mean the equation MUST be incorrect
+        # (assuming these errors are truly errors)
+        # this helps the generator not generate incorrect equations when they should be correct
+        print("Generated: \n", eq, "\n")
+        test = test_calc(eq)
+        if isinstance(test, str) and ("zero" in test or "negative" in test or "compute" in test):
+            if CORRECT:
+                i -+ 1
+                eq = ""
+                continue
+            
         # if the equation hasn't been invalidated by chance
         # then purposefully invalidate equation with a string of nonsense
         if not CORRECT and not isInvalid:
-            eq += "&|@,#`$~"
-    
+            eq += "&|@,#`$~"    
+        
         # Giving equation to testers
-        print("Generated: \n", eq)
+        print("Generated: \n", eq, "\n")
         try:
-            print("My calc result: \n", test_calc(eq))
+            print("My calc result: ", test_calc(eq))
         except Exception as e:
-            print("Calc Error: \n", str(e))
+            print("Calc Error: ", str(e))
+        print("\n")
         try:
-            print("Python eval result: \n", eval(eq)) 
+            print("Python eval result: ", eval(eq)) 
         except Exception as e:
-            print("Eval Error: \n", str(e))
+            print("Eval Error: ", str(e))
+        print("\n")
         
         eq = ""
-        i = i + 1
+        i += 1
     #equation gen increment
     ''' 
     Correct:
@@ -531,7 +575,7 @@ def generate_equations(amount):
 if __name__ == '__main__':
     
     print("How many equations would you like to be generated?")
-    
+    print(math.pow(1, -1.1))
     # get input and check that input is valid
     while(True):
         numOfEq = input("Input: ")
