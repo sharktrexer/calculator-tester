@@ -520,16 +520,20 @@ def generate_equations(amount):
         # the errors would mean the equation MUST be incorrect
         # (assuming these errors are truly errors)
         # this helps the generator not generate incorrect equations when they should be correct
-        print("Generated: \n", eq, "\n")
-        test = test_calc(eq)
-        print("test resulted: ", test)
-        if isinstance(test, str) and ("zero" in test or "negative" in test or "compute" in test):
-            if CORRECT:
-                eq = ""
-                continue
+        #print("Generated: \n", eq, "\n")
+        try:
+            test = test_calc(eq)
+            #print("test resulted: ", test)
+            if isinstance(test, str) and ("zero" in test or "negative" in test or "compute" in test):
+                if CORRECT:
+                    eq = ""
+                    continue
+        except Exception:
+            pass      
             
         # if the equation hasn't been invalidated by chance
         # then purposefully invalidate equation with a string of nonsense
+        ''' TODO check what caused isInvalid to be true when the "false" equation is actually valid '''
         if not CORRECT and not isInvalid:
             eq += "&|@,#`$~"    
         
