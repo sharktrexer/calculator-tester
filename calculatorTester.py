@@ -316,28 +316,36 @@ def validate(exp):
     #print(new_exp)
     return new_exp
 
-# Runs calculator and returns either evaluated expression or an error with '~' at the beginning
+# Runs calculator and returns either evaluated expression or an error string with '~' at the beginning
 def test_calc(exp):
-    #Get clean input with no white space
-    exp = ''.join(exp.split())
 
     validated = validate(exp)
     
     #Returns a ~message if an error is occured
     if '~' in validated: return validated
-    shunted = shunt(validated)
-    return shunted
+    return shunt(validated)
 
 ''' -----------------------------EQUATION GENERATION----------------------------- '''
 def generate_equations(amount):
     
+    #stat variables
+    num_of_incorrect = 0
+    num_of_correct = 0
+    
+    calc_valid_eq = 0
+    eval_valid_eq = 0
+    
+    calc_acc = 0
+    eval_acc = 0
+    
     eq = ""
+    eq_eval = "" #seperate equation string for eval() since it require different formatting for functions
     i = 0
     
     while(i < amount):
         
         #half of equations are incorrect
-        CORRECT = i < amount/2
+        CORRECT = i < amount/2            
         isInvalid = False
         
         terms = random.randint(1, MAX_NUM_OF_TERMS) # Rand number of terms in the equation
@@ -359,8 +367,9 @@ def generate_equations(amount):
                 
                 '''' ----------------decimal generator---------------- '''
                 while(iDec < decPlaces):
-                    # making sure the last decimal place is never 0
-                    if iDec == decPlaces - 1:
+                    # making sure the last decimal place is never 0 if CORRECT
+                    # wouldn't invalidate the equation but it looks nicer
+                    if iDec == decPlaces - 1 and CORRECT:
                         decNum += str(random.randint(1, 9))
                     else:
                         decNum += str(random.randint(0, 9))
@@ -392,7 +401,7 @@ def generate_equations(amount):
         
         while(iOp < len(num_stk) ):
             
-            OFIndex = 0 #which op is being fetched from the operater dictionary
+            OFIndex = 0 #which op/func if chosen
             n = num_stk[iOp] # number
             isLastNum = iOp == len(num_stk) - 1
             
@@ -440,28 +449,40 @@ def generate_equations(amount):
                 # and have the equation divided by parenthesis if generated as such
                 if(OFIndex == 0): #plus
                     eq += n + "+"
+                    eq_eval += n + "+"
                 elif(OFIndex == 1):   #minus
                     eq += n + "-"
+                    eq_eval += n + "-"
                 elif(OFIndex == 2):   #multiply
                     eq += n + "*"
+                    eq_eval += n + "*"
                 elif(OFIndex == 3):   #divide
                     eq += n + "/"
+                    eq_eval += n + "/"
                 elif(OFIndex == 4):   #exponent
                     eq += n + "^"
+                    eq_eval += n + "^"
                 elif(OFIndex == 5):   #sin(
-                    eq += "sin("     
+                    eq += "sin("  
+                    eq_eval += "math.sin("
                 elif(OFIndex == 6):   #tan(
-                    eq += "tan("     
+                    eq += "tan("  
+                    eq_eval += "math.tan("
                 elif(OFIndex == 7):   #cos(
                      eq += "cos("
+                     eq_eval += "math.cos("
                 elif(OFIndex == 8):   #cot(
                      eq += "cot("
+                     eq_eval += "math.cot("
                 elif(OFIndex == 9):   #log(
                      eq += "log("
+                     eq_eval += "math.log10("
                 elif(OFIndex == 10):  #ln(
                      eq += "ln("
+                     eq_eval += "math.log("
                 elif(OFIndex == 11):  #negate(
                      eq += "-("
+                     eq_eval += "-("
                 elif(OFIndex == 12):  #starting parenthesis (
                     # current number is instead fused with the paren
                     # this allows for an operation to be applied to it
@@ -472,6 +493,7 @@ def generate_equations(amount):
                     # otherwise fuse with the number so an operator may be used on it
                     if(isLastNum):
                         eq += n + ")"
+                        eq_eval += n + ")"
                     else:
                         num_stk[iOp] = n + ")"
                         onlyOps = True
@@ -489,15 +511,15 @@ def generate_equations(amount):
                         
             else:
                 eq += n
+                eq_eval += n
             
             iOp += 1
         # op & func gen increment
         
         ''' ----------------CLOSING PARENTHESIS---------------- '''
-        #if correct: close all starting paren for the equation
-        iParen = 0;
-        
-        while iParen < unclosedParenCount:
+        while unclosedParenCount > 0:
+            
+            unclosedParenCount -= 1
             
             #chance to not add a closing paren if this equation is being generated incorrectly
             if not CORRECT and random.randint(0,1):
@@ -506,9 +528,9 @@ def generate_equations(amount):
                 
             #otherwise close all leftover paren
             eq += ")"
+            eq_eval += ")"
             
-            iParen += 1
-        # paren closing loop increment
+        # closing paren loop end
             
             
         # If the equation must be correct then it is necessary to test the generated eq
@@ -520,13 +542,13 @@ def generate_equations(amount):
         # the errors would mean the equation MUST be incorrect (assuming these errors are truly errors)
         # this helps the generator not generate incorrect equations when they should be correct
         # since the generator is unable to check for these errors as they can only be found during eval
-        #print("Generated: \n", eq, "\n")
         try:
             test = test_calc(eq)
             #print("test resulted: ", test)
             if isinstance(test, str) and ("zero" in test or "negative" in test or "compute" in test):
                 if CORRECT:
                     eq = ""
+                    eq_eval = ""
                     continue
         except Exception:
             pass      
@@ -536,53 +558,84 @@ def generate_equations(amount):
         ''' TODO check what caused isInvalid to be true when the "false" equation is actually valid '''
         if not CORRECT and not isInvalid:
             eq += "&|@,#`$~"    
+            eq_eval += "(b#$!&?"
         
         
-        ''' Results and Testing '''
+        ''' -------------------------------Results and Testing------------------------------- '''
         
         print("\nEQUATION #", i+1, "----------------------------------------------\n")
         print('Valid?: ', CORRECT)
-        print("Number of terms: ", terms, "\n")
+        
+        #current equation count
+        if CORRECT: num_of_correct += 1
+        else: num_of_incorrect += 1
         
         # Giving equation to testers
         print("Generated: \n", eq, "\n")
+        #print("Generated: \n", eq_eval, "\n")
+        
         try:
-            print("My calc result: ", test_calc(eq))
+            c = test_calc(eq)
+            
+            #if eq is correct and calc deemed it incorrect, then decrement valid count
+            if not(isinstance(c, str) and '~' in c): 
+                calc_valid_eq = calc_valid_eq + 1 if CORRECT else calc_valid_eq - 1
+            else:
+                calc_valid_eq = calc_valid_eq - 1 if CORRECT else calc_valid_eq + 1
+                
+            print("My calc result: ", c)
         except Exception as e:
             print("Calc Error: ", str(e))
-        print("\n")
-        try:
-            print("Python eval result: ", eval(eq)) 
-        except Exception as e:
-            print("Eval Error: ", str(e))
+            calc_valid_eq = calc_valid_eq - 1 if CORRECT else calc_valid_eq + 1
+         
+        # current calc acc, not printed if on final equation  
+        calc_acc = (calc_valid_eq / (num_of_correct + num_of_incorrect)) * 100   
+        
+        print(">My calc has so far identified", calc_valid_eq, "equation(s) correctly")
+        if i != amount - 1:
+            print("\t Current accuracy: ", calc_acc, "%")
+        
         print("\n")
         
+        try:
+            print("Python's eval result: ", eval(eq_eval)) 
+            eval_valid_eq = eval_valid_eq + 1 if CORRECT else eval_valid_eq - 1
+        except Exception as e:
+            print("Eval Error: ", str(e))
+            eval_valid_eq = eval_valid_eq - 1 if CORRECT else eval_valid_eq + 1
+        
+        # current eval acc, not printed if on final equation
+        eval_acc = (eval_valid_eq / (num_of_correct + num_of_incorrect)) * 100
+        
+        print(">Python's eval has so far identified", eval_valid_eq, "equation(s) correctly")
+        if i != amount - 1:
+            print("\t Current accuracy: ", eval_acc, "%")
+        
         eq = ""
+        eq_eval = ""
         i += 1
     #equation gen increment
-    ''' 
-            
-    Incorrect:
-        -equation contains random text
-        decimals have multiple periods
-        2 non minus operators in a row
-        unbalanced operators
-    '''
-    '''
-    Stats:
-        Number of Correct vs Incorrect equations generated
-        Number of correct equations found by calc and eval()
-        Accuracy of calc
-        Time taken for each to evaluate equation?
-    '''
+
     
-    #print final cumulative stats
+    ''' ---------------------CUMULATiVE STATS--------------------- '''
+    # Accuracy
+    #calc_acc = calculate_accuracy(calc_valid_eq, num_of_correct, num_of_incorrect) 
+    #eval_acc = calculate_accuracy(eval_valid_eq, num_of_correct, num_of_incorrect)
     
-'''' Main '''
+    print("\n-------------------------------FINAL STATS-------------------------------\n")
+    print("Incorrect number of eq generated: ", num_of_incorrect, " vs correct number of eq generated: ", num_of_correct, "\n")
+    print("My calc identified", calc_valid_eq, "equation(s) correctly")
+    print("\t Final Accuracy: ", calc_acc, "%")
+    print("Python's eval() identified", eval_valid_eq, "equation(s) correctly")
+    print("\t Final Accuracy: ", eval_acc, "%")
+    
+
+'''' ------------------------------------------MAIN------------------------------------------ '''
 if __name__ == '__main__':
     
     print("How many equations would you like to be generated?")
-    print(math.pow(1, -1.1))
+    print("\tNote that Python's eval() cannot interpret equations that use either cot() ")
+    print("\tor decimals for exponents which this tester may generate")
     # get input and check that input is valid
     while(True):
         numOfEq = input("Input: ")
