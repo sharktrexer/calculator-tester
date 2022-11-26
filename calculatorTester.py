@@ -390,8 +390,6 @@ def generate_equations(amount):
             iTerm += 1
         # number gen increment     
             
-            
-        print("stack: ", num_stk, "\n")
         
         ''' -----------------------------OPERATOR & FUNCTION GENERATOR----------------------------- '''
         unclosedParenCount = 0

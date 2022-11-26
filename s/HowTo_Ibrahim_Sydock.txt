@@ -1,0 +1,4 @@
+To run you need to download python here: https://www.python.org/downloads
+
+Once downloaded, open a command prompt and change to the directory to wherever the calculatorTester.py file is located. 
+Then enter "python calculatorTester.py" to run.
