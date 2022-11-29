@@ -615,7 +615,7 @@ def generate_equations(amount):
     #equation gen increment
 
     
-    ''' ---------------------CUMULATiVE STATS--------------------- '''
+    ''' ---------------------CUMULATIVE STATS--------------------- '''
     # Accuracy
     #calc_acc = calculate_accuracy(calc_valid_eq, num_of_correct, num_of_incorrect) 
     #eval_acc = calculate_accuracy(eval_valid_eq, num_of_correct, num_of_incorrect)
@@ -632,8 +632,15 @@ def generate_equations(amount):
 if __name__ == '__main__':
     
     print("How many equations would you like to be generated?")
-    print("\tNote that Python's eval() cannot interpret equations that use either cot() ")
+    print("\tNote 0: Python's eval() cannot interpret equations that use either cot() ")
     print("\tor decimals for exponents which this tester may generate")
+    print("\t------------------------------------------")
+    print("\tNote 1: these are the current values the equation generator is using: ")
+    print("\t>NUM_RANGE =", NUM_RANGE, "- the limit of numbers generated between positive and negative.")
+    print("\t>MAX_NUM_OF_TERMS =", MAX_NUM_OF_TERMS, "- the max amount of terms generated per equation.")
+    print("\t>MAX_NUM_OF_DECIMAL_PLACES =", MAX_NUM_OF_DECIMAL_PLACES, "- the max amount of decimal places a decimal will generate with")
+    print("\tThese constant values are hardcoded but can be manual changed if desired.")
+    
     # get input and check that input is valid
     while(True):
         numOfEq = input("Input: ")
