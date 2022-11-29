@@ -30,7 +30,7 @@ def div(num1, num2):
     return num1 / num2
 
 def cot(num):
-    return math.cos(num) / math.sin(num)
+    return 1 / math.tan(num)
 
 def neg(num):
     return num * -1
@@ -161,8 +161,8 @@ def shunt(exp):
                     return '~The argument of a log function cannot be less than or equal to zero'
                 
                 # divide by zero error
-                if(math.sin(num) == 0 and op == 'o'):
-                    return '~The argument of a cotangent function had a value of sin() equal to zero'
+                if(math.tan(num) == 0 and op == 'o'):
+                    return '~The argument of a cotangent function had a value of tan() equal to zero'
                 
                 #print(operations[op](num))
                 ops_stk.append(operations[op](num))
@@ -471,7 +471,7 @@ def generate_equations(amount):
                      eq_eval += "math.cos("
                 elif(OFIndex == 8):   #cot(
                      eq += "cot("
-                     eq_eval += "math.cot("
+                     eq_eval += "1/math.tan("
                 elif(OFIndex == 9):   #log(
                      eq += "log("
                      eq_eval += "math.log10("
@@ -632,8 +632,8 @@ def generate_equations(amount):
 if __name__ == '__main__':
     
     print("How many equations would you like to be generated?")
-    print("\tNote 0: Python's eval() cannot interpret equations that use either cot() ")
-    print("\tor decimals for exponents which this tester may generate")
+    print("\tNote 0: Python's eval() cannot interpret equations that use decimals ")
+    print("\tto be evaluated as exponents, which this tester may generate")
     print("\t------------------------------------------")
     print("\tNote 1: these are the current values the equation generator is using: ")
     print("\t>NUM_RANGE =", NUM_RANGE, "- the limit of numbers generated between positive and negative.")
