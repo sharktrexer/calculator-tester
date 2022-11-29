@@ -639,7 +639,7 @@ if __name__ == '__main__':
     print("\t>NUM_RANGE =", NUM_RANGE, "- the limit of numbers generated between positive and negative.")
     print("\t>MAX_NUM_OF_TERMS =", MAX_NUM_OF_TERMS, "- the max amount of terms generated per equation.")
     print("\t>MAX_NUM_OF_DECIMAL_PLACES =", MAX_NUM_OF_DECIMAL_PLACES, "- the max amount of decimal places a decimal will generate with")
-    print("\tThese constant values are hardcoded but can be manual changed if desired.")
+    print("\tThese constant values are hardcoded but can be manually changed if desired.")
     
     # get input and check that input is valid
     while(True):
