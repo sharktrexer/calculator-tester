@@ -1,8 +1,10 @@
 # calculator tester
-A program that randomly generates equations to then test against my basic string-input calculator and python's eval() function. Contains a slightly modified version of my calculator, so no additional downloads are necessary.
+A program that randomly generates equations to then test against my basic string-input calculator and python's eval() function. Requires [my python calculator](https://github.com/sharktrexer/calculator) to run.
 
-To run you need to download python here: https://www.python.org/downloads
+You also need to download python here: https://www.python.org/downloads
 
-Only the calculatorTester.py needs to be downloaded. Once downloaded, open a command prompt and change to the directory to wherever the calculatorTester.py file is located. Then enter "python calculatorTester.py" to run.
+Once both calculator.py and calculatorTeser.py are downloaded, make sure they are both in the same file directory. Open a command prompt and change to the directory to wherever the python files are located. Then enter "python calculatorTester.py" to run.
 
-To use my calculator to solve equations you can input: https://github.com/sharktrexer/calculator
+Example:
+
+![calc test](https://github.com/sharktrexer/calculator-tester/assets/32965854/36e515a4-0c22-4678-9857-f1f7c7795123)
