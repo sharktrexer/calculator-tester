@@ -3,7 +3,7 @@ A program that randomly generates equations to then test against my basic string
 
 You also need to download python here: https://www.python.org/downloads
 
-Once both calculator.py and calculatorTeser.py are downloaded, make sure they are both in the same file directory. Open a command prompt and change to the directory to wherever the python files are located. Then enter "python calculatorTester.py" to run.
+Once both calculator.py and calculatorTester.py files are downloaded, make sure they are both in the same file directory. Open a command prompt and change to the directory to wherever the files are located. Then enter "python calculatorTester.py" to run.
 
 Example:
 
